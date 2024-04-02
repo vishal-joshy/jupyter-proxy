@@ -4,8 +4,7 @@ c = get_config()  # noqa
 
 # Use DummyAuthenticator and SimpleSpawner
 c.JupyterHub.spawner_class = "simple"
-c.JupyterHub.authenticator_class = "dummy"
+c.JupyterHub.authenticator_class = "null"
 c.JupyterHub.services = [
     {"name": "my-app", "api_token": "secret-token", "admin": True,}
 ]
-c.LocalAuthenticator.create_system_users=True
