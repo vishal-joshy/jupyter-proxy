@@ -1,0 +1,188 @@
+{
+	"info": {
+		"_postman_id": "d910980b-ce49-4164-b99b-5d902a500267",
+		"name": "JuputerHub",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29105316"
+	},
+	"item": [
+		{
+			"name": "List",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token secret-token",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/hub/api/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"hub",
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token secret-token",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/hub/api/users/Bob",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"hub",
+						"api",
+						"users",
+						"Bob"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateToken",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token secret-token",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/hub/api/users/bob/tokens",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"hub",
+						"api",
+						"users",
+						"bob",
+						"tokens"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "StartServer",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token 024626be1e3e4ff484b5145f088dda15",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/hub/api/users/bob/server",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"hub",
+						"api",
+						"users",
+						"bob",
+						"server"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateUser",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token secret-token",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8000/hub/api/users/bob",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"hub",
+						"api",
+						"users",
+						"bob"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateNewNotebook",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token b511b1ff6d324e029ce2f88b2b0fa186",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"type\":\"notebook\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/user/Bob/api/contents",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"user",
+						"Bob",
+						"api",
+						"contents"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
