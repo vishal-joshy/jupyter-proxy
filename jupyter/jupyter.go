@@ -61,6 +61,7 @@ func CreateUser(c echo.Context) error {
 	if err := c.Bind(&u); err != nil {
 		return err
 	}
+	fmt.Println(u)
 	req, err := http.NewRequest("POST", url+"/users/"+u.Name, nil)
 	AddHeaders(req)
 	res, err := client.Do(req)
@@ -71,6 +72,45 @@ func CreateUser(c echo.Context) error {
 	if err := json.NewDecoder(res.Body).Decode(&resBody); err != nil {
 		fmt.Println(err)
 	}
+	fmt.Println("User Created ", u.Name)
+	userToken, err := GetUserToken(u.Name)
+	fmt.Println("UserToken Generated" + userToken)
+	notebookStatus := CreateNotebook(u.Name, userToken)
+	fmt.Println("Notebook Created" + notebookStatus)
+	notebookUrl := "http://localhost:8000/user/jon1/notebooks?token=" + userToken
+	return c.JSON(http.StatusOK, notebookUrl)
+}
+
+type Token struct {
+	created string
+	user    string
+	token   string
+}
+
+func GetUserToken(username string) (string, error) {
+	req, err := http.NewRequest("POST", url+"/users/"+username+"/tokens", nil)
+	AddHeaders(req)
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	var resBody any
+	if err := json.NewDecoder(res.Body).Decode(&resBody); err != nil {
+		fmt.Println(err)
+	}
 	fmt.Println(resBody)
-	return c.JSON(http.StatusOK, resBody)
+	return "", nil
+}
+
+// 201 server started
+// 202 server requested not started
+// 400 server running
+func CreateNotebook(username string, token string) string {
+	req, err := http.NewRequest("POST", url+"/users/"+username+"/server", nil)
+	AddHeaders(req)
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return res.Status
 }

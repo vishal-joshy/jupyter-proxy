@@ -1,8 +1,6 @@
 FROM jupyter/base-notebook
 
-RUN pip install jupyterhub
-
-COPY jupyterhub_config.py /srv/jupyterhub/
+ADD jupyterhub_config.py /srv/jupyterhub/jupyterhub_config.py
 
 EXPOSE 8000
 
