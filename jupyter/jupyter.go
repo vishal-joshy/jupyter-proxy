@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
 
-const url = "http://localhost:8000/hub/api"
+const hubUrl = "http://localhost:8000/hub/api/"
+const userUrl = "http://localhost:8000/user/"
 
+// Add admin auth headers to hub api requests.
+// Token available in hub configuration
 func AddHeaders(req *http.Request) {
 	req.Header.Add("Authorization", "Token secret-token")
 	req.Header.Add("Content-Type", "application/json")
@@ -18,12 +22,11 @@ func AddHeaders(req *http.Request) {
 type JupyterUser struct {
 	Name string `json:"name"`
 }
-type Test map[string]any
 
 var client = http.Client{}
 
 func GetUsers(c echo.Context) error {
-	req, err := http.NewRequest("GET", url+"/users", nil)
+	req, err := http.NewRequest("GET", hubUrl+"/users", nil)
 	AddHeaders(req)
 	res, err := client.Do(req)
 	if err != nil {
@@ -33,13 +36,12 @@ func GetUsers(c echo.Context) error {
 	if err := json.NewDecoder(res.Body).Decode(&userList); err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("%+v", userList)
 	return c.JSON(http.StatusOK, userList)
 }
 
 func GetUser(c echo.Context) error {
 	username := c.Param("name")
-	req, err := http.NewRequest("GET", url+"/users/"+username, nil)
+	req, err := http.NewRequest("GET", hubUrl+"/users/"+username, nil)
 	AddHeaders(req)
 	res, err := client.Do(req)
 	var user JupyterUser
@@ -52,18 +54,18 @@ func GetUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
-type CreateUserForm struct {
+type CreateUserInput struct {
 	Name string `json:"name"`
 }
 
-func CreateUser(c echo.Context) error {
-	var u CreateUserForm
+func CreateUserAndStartNotebook(c echo.Context) error {
+	var u CreateUserInput
 	if err := c.Bind(&u); err != nil {
 		return err
 	}
-	fmt.Println(u)
-	req, err := http.NewRequest("POST", url+"/users/"+u.Name, nil)
+	req, err := http.NewRequest("POST", hubUrl+"/users/"+u.Name, nil)
 	AddHeaders(req)
+	fmt.Println("Creating User ", u.Name)
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
@@ -72,45 +74,55 @@ func CreateUser(c echo.Context) error {
 	if err := json.NewDecoder(res.Body).Decode(&resBody); err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("User Created ", u.Name)
-	userToken, err := GetUserToken(u.Name)
-	fmt.Println("UserToken Generated" + userToken)
-	notebookStatus := CreateNotebook(u.Name, userToken)
-	fmt.Println("Notebook Created" + notebookStatus)
-	notebookUrl := "http://localhost:8000/user/jon1/notebooks?token=" + userToken
-	return c.JSON(http.StatusOK, notebookUrl)
+	fmt.Println("User Created", u.Name)
+
+	userToken, err := GetToken(u.Name)
+	isNotebookCreated := CreateNotebook(u.Name, userToken)
+	if isNotebookCreated {
+		notebookUrl := userUrl + u.Name + "?token=" + userToken
+		return c.JSON(http.StatusOK, notebookUrl)
+	}
+	return c.JSON(http.StatusInternalServerError, nil)
 }
 
-type Token struct {
-	created string
-	user    string
-	token   string
+type JupyterUserToken struct {
+	Created string
+	User    string
+	Token   string
 }
 
-func GetUserToken(username string) (string, error) {
-	req, err := http.NewRequest("POST", url+"/users/"+username+"/tokens", nil)
+func GetToken(username string) (string, error) {
+	req, err := http.NewRequest("POST", hubUrl+"/users/"+username+"/tokens", nil)
 	AddHeaders(req)
+	fmt.Println("Creating Token")
 	res, err := client.Do(req)
 	if err != nil {
 		return "", err
 	}
-	var resBody any
+	var resBody JupyterUserToken
 	if err := json.NewDecoder(res.Body).Decode(&resBody); err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(resBody)
-	return "", nil
+	return resBody.Token, nil
 }
 
 // 201 server started
 // 202 server requested not started
 // 400 server running
-func CreateNotebook(username string, token string) string {
-	req, err := http.NewRequest("POST", url+"/users/"+username+"/server", nil)
+func CreateNotebook(username string, token string) bool {
+	fmt.Println("Starting Notebook for user" + username)
+	req, _ := http.NewRequest("POST", hubUrl+"/users/"+username+"/server", nil)
 	AddHeaders(req)
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
+	for {
+		res, err := client.Do(req)
+		if err != nil {
+			fmt.Println("Notebook creation failed" + err.Error())
+			return false
+		}
+		if res.StatusCode == 400 {
+			return true
+		}
+
+		time.Sleep(4 * time.Second)
 	}
-	return res.Status
 }

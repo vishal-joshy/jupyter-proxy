@@ -18,6 +18,6 @@ func main() {
 	e := echo.New()
 	e.GET("/users", jupyter.GetUsers)
 	e.GET("/users/:name", jupyter.GetUser)
-	e.POST("/users", jupyter.CreateUser)
-	e.Logger.Fatal(e.Start(":1325"))
+	e.POST("/users", jupyter.CreateUserAndStartNotebook)
+	e.Logger.Fatal(e.Start(":1323"))
 }
